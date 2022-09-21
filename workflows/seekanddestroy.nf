@@ -43,10 +43,12 @@ include { INPUT_CHECK } from '../subworkflows/local/input_check'
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-//
 // MODULE: Installed directly from nf-core/modules
-//
 include { FASTQC                      } from '../modules/nf-core/modules/fastqc/main'
+include { CUTADAPT                    } from '../modules/nf-core/modules/cutadapt/main'
+include { FASTP                       } from '../modules/nf-core/modules/fastp/main'
+include { KRAKEN2_KRAKEN2             } from '../modules/nf-core/modules/kraken2/main'
+include { KRONA                       } from '../modules/nf-core/modules/krona/main'
 include { MULTIQC                     } from '../modules/nf-core/modules/multiqc/main'
 include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/modules/custom/dumpsoftwareversions/main'
 
@@ -63,17 +65,13 @@ workflow SEEKANDDESTROY {
 
     ch_versions = Channel.empty()
 
-    //
     // SUBWORKFLOW: Read in samplesheet, validate and stage input files
-    //
     INPUT_CHECK (
         ch_input
     )
     ch_versions = ch_versions.mix(INPUT_CHECK.out.versions)
 
-    //
     // MODULE: Run FastQC
-    //
     FASTQC (
         INPUT_CHECK.out.reads
     )
@@ -83,9 +81,7 @@ workflow SEEKANDDESTROY {
         ch_versions.unique().collectFile(name: 'collated_versions.yml')
     )
 
-    //
     // MODULE: MultiQC
-    //
     workflow_summary    = WorkflowSeekanddestroy.paramsSummaryMultiqc(workflow, summary_params)
     ch_workflow_summary = Channel.value(workflow_summary)
 

@@ -21,6 +21,10 @@
                     "branch": "master",
                     "git_sha": "409a308ba46284d8ebb48c2c1befd6f6433db3f7"
                 },
+                "krakentools/kreport2krona": {
+                    "branch": "master",
+                    "git_sha": "90aef30f432332bdf0ce9f4b9004aa5d5c4960bb"
+                },
                 "multiqc": {
                     "branch": "master",
                     "git_sha": "e745e167c1020928ef20ea1397b6b4d230681b4d"

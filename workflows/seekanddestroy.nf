@@ -50,6 +50,7 @@ include { FASTP                       } from '../modules/nf-core/modules/fastp/m
 include { KRAKEN2_KRAKEN2             } from '../modules/nf-core/modules/kraken2/kraken2/main'
 include { KRAKENTOOLS_KREPORT2KRONA   } from '../modules/nf-core/modules/krakentools/kreport2krona/main'
 include { KRONA_KRONADB               } from '../modules/nf-core/modules/krona/kronadb/main'
+include { KRONA_KTIMPORTTAXONOMY      } from '../modules/nf-core/modules/krona/ktimporttaxonomy/main' 
 include { MULTIQC                     } from '../modules/nf-core/modules/multiqc/main'
 include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/modules/custom/dumpsoftwareversions/main'
 
@@ -72,7 +73,7 @@ workflow SEEK_AND_DESTROY {
     )
     ch_versions = ch_versions.mix(INPUT_CHECK.out.versions)
 
-    // MODULE: Run FastQC
+    // MODULE: Run FastQC: check initial quality
     FASTQC (
         INPUT_CHECK.out.reads
     )
@@ -82,8 +83,52 @@ workflow SEEK_AND_DESTROY {
         ch_versions.unique().collectFile(name: 'collated_versions.yml')
     )
 
+    // MODULE: Run CutAdapt: remove adapters
+    CUTADAPT (
+        fastq_meta
+    )
+
+    // MODULE: Run FastP: trim sequences
+    FASTP (
+        CUTADAPT.out.reads
+    )
+
+    // MODULE: Run FastQC: check quality after quality control
+
+    FASTQC (
+        FASTP.out.reads
+    )
+
+    // MODULE: Run Kraken2: exploration with the first database
+
+    KRAKEN2_KRAKEN2 (
+        FASTP.out.reads
+    )
+
+    KRAKENTOOLS_KREPORT2KRONA (
+
+    )
+
+    // MODULE: Run Krona: visualization of the kraken2 results
+
+    KRONA_KRONADB (
+
+    )
+
+    KRONA_KTIMPORTTAXONOMY (
+        KRONA_KRONADB.out.db
+    )
+
+    // MODULE: Run Kraken2: to remove host reads
+
+    KRAKEN2_KRAKEN2 (
+
+    )
+
+
+
     // MODULE: MultiQC
-    workflow_summary    = WorkflowSeekanddestroy.paramsSummaryMultiqc(workflow, summary_params)
+    workflow_summary    = WorkflowSeek_and_destroy.paramsSummaryMultiqc(workflow, summary_params)
     ch_workflow_summary = Channel.value(workflow_summary)
 
     ch_multiqc_files = Channel.empty()

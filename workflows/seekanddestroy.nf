@@ -48,7 +48,8 @@ include { FASTQC                      } from '../modules/nf-core/modules/fastqc/
 include { CUTADAPT                    } from '../modules/nf-core/modules/cutadapt/main'
 include { FASTP                       } from '../modules/nf-core/modules/fastp/main'
 include { KRAKEN2_KRAKEN2             } from '../modules/nf-core/modules/kraken2/kraken2/main'
-include { KRONA                       } from '../modules/nf-core/modules/krona/main'
+include { KRAKENTOOLS_KREPORT2KRONA   } from '../modules/nf-core/modules/krakentools/kreport2krona/main'
+include { KRONA_KRONADB               } from '../modules/nf-core/modules/krona/kronadb/main'
 include { MULTIQC                     } from '../modules/nf-core/modules/multiqc/main'
 include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/modules/custom/dumpsoftwareversions/main'
 

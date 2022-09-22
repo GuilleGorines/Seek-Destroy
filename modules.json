@@ -29,6 +29,14 @@
                     "branch": "master",
                     "git_sha": "90aef30f432332bdf0ce9f4b9004aa5d5c4960bb"
                 },
+                "krona/kronadb": {
+                    "branch": "master",
+                    "git_sha": "90aef30f432332bdf0ce9f4b9004aa5d5c4960bb"
+                },
+                "krona/ktimporttaxonomy": {
+                    "branch": "master",
+                    "git_sha": "90aef30f432332bdf0ce9f4b9004aa5d5c4960bb"
+                },
                 "multiqc": {
                     "branch": "master",
                     "git_sha": "e745e167c1020928ef20ea1397b6b4d230681b4d"

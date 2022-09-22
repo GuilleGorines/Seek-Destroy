@@ -47,7 +47,7 @@ include { INPUT_CHECK } from '../subworkflows/local/input_check'
 include { FASTQC                      } from '../modules/nf-core/modules/fastqc/main'
 include { CUTADAPT                    } from '../modules/nf-core/modules/cutadapt/main'
 include { FASTP                       } from '../modules/nf-core/modules/fastp/main'
-include { KRAKEN2_KRAKEN2             } from '../modules/nf-core/modules/kraken2/main'
+include { KRAKEN2_KRAKEN2             } from '../modules/nf-core/modules/kraken2/kraken2/main'
 include { KRONA                       } from '../modules/nf-core/modules/krona/main'
 include { MULTIQC                     } from '../modules/nf-core/modules/multiqc/main'
 include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/modules/custom/dumpsoftwareversions/main'
@@ -61,7 +61,7 @@ include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/modules/custom/
 // Info required for completion email and summary
 def multiqc_report = []
 
-workflow SEEKANDDESTROY {
+workflow SEEK_AND_DESTROY {
 
     ch_versions = Channel.empty()
 

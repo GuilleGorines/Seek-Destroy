@@ -9,6 +9,10 @@
                     "branch": "master",
                     "git_sha": "e745e167c1020928ef20ea1397b6b4d230681b4d"
                 },
+                "cutadapt": {
+                    "branch": "master",
+                    "git_sha": "e745e167c1020928ef20ea1397b6b4d230681b4d"
+                },
                 "fastp": {
                     "branch": "master",
                     "git_sha": "2c70c1c1951aaf884d2e8d8d9c871db79f7b35aa"

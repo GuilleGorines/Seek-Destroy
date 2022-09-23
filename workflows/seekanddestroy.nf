@@ -44,17 +44,17 @@ include { INPUT_CHECK } from '../subworkflows/local/input_check'
 */
 
 // MODULE: Installed directly from nf-core/modules
-include { FASTQC_PREVIOUS             } from '../modules/nf-core/modules/fastqc/main'
-include { CUTADAPT                    } from '../modules/nf-core/modules/cutadapt/main'
-include { FASTP                       } from '../modules/nf-core/modules/fastp/main'
-include { FASTQC_POSTERIOR            } from '../modules/nf-core/modules/fastqc/main'
-include { KRAKEN2_SCOUTING            } from '../modules/nf-core/modules/kraken2/kraken2/main'
-include { KRAKENTOOLS_KREPORT2KRONA   } from '../modules/nf-core/modules/krakentools/kreport2krona/main'
-include { KRONA_KRONADB               } from '../modules/nf-core/modules/krona/kronadb/main'
-include { KRONA_KTIMPORTTAXONOMY      } from '../modules/nf-core/modules/krona/ktimporttaxonomy/main'
-include { KRAKEN2_HOST_REMOVAL        } from '../modules/nf-core/modules/kraken2/kraken2/main'
-include { MULTIQC                     } from '../modules/nf-core/modules/multiqc/main'
-include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/modules/custom/dumpsoftwareversions/main'
+include { FASTQC as FASTQC_PREVIOUS               } from '../modules/nf-core/modules/fastqc/main'
+include { CUTADAPT                                } from '../modules/nf-core/modules/cutadapt/main'
+include { FASTP                                   } from '../modules/nf-core/modules/fastp/main'
+include { FASTQC as FASTQC_POSTERIOR              } from '../modules/nf-core/modules/fastqc/main'
+include { KRAKEN2_KRAKEN2 as KRAKEN2_SCOUTING     } from '../modules/nf-core/modules/kraken2/kraken2/main'
+include { KRAKENTOOLS_KREPORT2KRONA               } from '../modules/nf-core/modules/krakentools/kreport2krona/main'
+include { KRONA_KRONADB                           } from '../modules/nf-core/modules/krona/kronadb/main'
+include { KRONA_KTIMPORTTAXONOMY                  } from '../modules/nf-core/modules/krona/ktimporttaxonomy/main'
+include { KRAKEN2_KRAKEN2 as KRAKEN2_HOST_REMOVAL } from '../modules/nf-core/modules/kraken2/kraken2/main'
+include { MULTIQC                                 } from '../modules/nf-core/modules/multiqc/main'
+include { CUSTOM_DUMPSOFTWAREVERSIONS             } from '../modules/nf-core/modules/custom/dumpsoftwareversions/main'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -108,7 +108,7 @@ workflow SEEK_AND_DESTROY {
     ch_versions = ch_versions.mix(KRAKEN2_SCOUTING.out.versions.first())
     
     KRAKENTOOLS_KREPORT2KRONA (
-
+        KRAKEN2_SCOUTING.out.report
     )
     ch_versions = ch_versions.mix(KRAKENTOOLS_KREPORT2KRONA.out.versions.first())
 
@@ -120,6 +120,7 @@ workflow SEEK_AND_DESTROY {
     ch_versions = ch_versions.mix(KRONA_KRONADB.out.versions.first())
 
     KRONA_KTIMPORTTAXONOMY (
+        KRAKENTOOLS_KREPORT2KRONA.out.txt,
         KRONA_KRONADB.out.db
     )
 
@@ -127,7 +128,7 @@ workflow SEEK_AND_DESTROY {
     // MODULE: Run Kraken2: to remove host reads
     // HOST REMOVAL SUBWORKFLOW??
     KRAKEN2_HOST_REMOVAL (
-
+        FASTP.out.reads
     )
 
     CUSTOM_DUMPSOFTWAREVERSIONS (

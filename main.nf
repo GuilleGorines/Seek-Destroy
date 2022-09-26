@@ -25,13 +25,13 @@ WorkflowMain.initialise(workflow, params, log)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { SEEKANDDESTROY } from './workflows/seekanddestroy'
+include { SEEK_AND_DESTROY } from './workflows/seekanddestroy'
 
 //
 // WORKFLOW: Run main nf-core/seekanddestroy analysis pipeline
 //
 workflow NFCORE_SEEKANDDESTROY {
-    SEEKANDDESTROY ()
+    SEEK_AND_DESTROY ()
 }
 
 /*

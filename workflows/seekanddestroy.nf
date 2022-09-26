@@ -79,18 +79,20 @@ workflow SEEK_AND_DESTROY {
     FASTQC_PREVIOUS (
         INPUT_CHECK.out.reads
     )
-    ch_versions = ch_versions.mix(FASTQC.out.versions.first())
+    ch_versions = ch_versions.mix(FASTQC_PREVIOUS.out.versions.first())
     
     // QUALITY CONTROL SUBWORKFLOW??
     // MODULE: Run CutAdapt: remove adapters
     CUTADAPT (
-        fastq_meta
+        INPUT_CHECK.out.reads
     )
     ch_versions = ch_versions.mix(CUTADAPT.out.versions.first())
 
     // MODULE: Run FastP: trim sequences
     FASTP (
-        CUTADAPT.out.reads
+        CUTADAPT.out.reads,
+        params.save_trimmed_reads,
+        params.save_merged_reads
     )
     ch_versions = ch_versions.mix(FASTP.out.versions.first())
 
@@ -103,7 +105,10 @@ workflow SEEK_AND_DESTROY {
     // MODULE: Run Kraken2: exploration with the first database
     // Should this be a subworkflow?
     KRAKEN2_SCOUTING (
-        FASTP.out.reads
+        FASTP.out.reads,
+        params.scout_database,
+        false,
+        false
     )
     ch_versions = ch_versions.mix(KRAKEN2_SCOUTING.out.versions.first())
     
@@ -128,7 +133,10 @@ workflow SEEK_AND_DESTROY {
     // MODULE: Run Kraken2: to remove host reads
     // HOST REMOVAL SUBWORKFLOW??
     KRAKEN2_HOST_REMOVAL (
-        FASTP.out.reads
+        FASTP.out.reads,
+        params.host_database,
+        true,
+        false
     )
 
     CUSTOM_DUMPSOFTWAREVERSIONS (
@@ -136,7 +144,7 @@ workflow SEEK_AND_DESTROY {
     )
 
     // MODULE: MultiQC
-    workflow_summary    = WorkflowSeek_and_destroy.paramsSummaryMultiqc(workflow, summary_params)
+    workflow_summary    = WorkflowSeekanddestroy.paramsSummaryMultiqc(workflow, summary_params)
     ch_workflow_summary = Channel.value(workflow_summary)
 
     ch_multiqc_files = Channel.empty()
@@ -144,7 +152,7 @@ workflow SEEK_AND_DESTROY {
     ch_multiqc_files = ch_multiqc_files.mix(ch_multiqc_custom_config.collect().ifEmpty([]))
     ch_multiqc_files = ch_multiqc_files.mix(ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
     ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_DUMPSOFTWAREVERSIONS.out.mqc_yml.collect())
-    ch_multiqc_files = ch_multiqc_files.mix(FASTQC.out.zip.collect{it[1]}.ifEmpty([]))
+    ch_multiqc_files = ch_multiqc_files.mix(FASTQC_PREVIOUS.out.zip.collect{it[1]}.ifEmpty([]))
 
     MULTIQC (
         ch_multiqc_files.collect()

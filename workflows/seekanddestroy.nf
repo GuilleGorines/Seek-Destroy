@@ -116,12 +116,11 @@ workflow SEEK_AND_DESTROY {
 
     if (params.scout_database.endsWith("tar.gz") or params.scout_database.endsWith(".tgz")){
     
-    ch_krakendb_scout = [[], returnFile(params.scout_database)]
+    ch_krakendb_scout = [[], file(params.scout_database)]
     UNTAR_SCOUTING_DB (ch_krakendb_scout)
-    ch_scout_database = UNTAR_SCOUTING_DB.out.untar
+    ch_scout_database = UNTAR_SCOUTING_DB.out.untar.map{ it[1] }
     }
     
-
     KRAKEN2_SCOUTING (
         FASTP.out.reads,
         ch_scout_database,
@@ -149,12 +148,12 @@ workflow SEEK_AND_DESTROY {
     // MODULE: Run Kraken2: to remove host reads
     // HOST REMOVAL SUBWORKFLOW??
     
-    if (params.host_database.endsWith("tar.gz") or params.host_database.endsWith(".tgz")) 
-    {
-        ch_krakendb_host = [[], returnFile(params.host_database)]
+    if (params.host_database.endsWith("tar.gz") or params.host_database.endsWith(".tgz")) {
+        ch_krakendb_host = [[], file(params.host_database)]
         UNTAR_HOST_DB (ch_krakendb_host)
-        ch_host_database = UNTAR_SCOUTING_DB.out.untar
+        ch_host_database = UNTAR_SCOUTING_DB.out.untar.map{ it[1] }
     }
+    
     
     KRAKEN2_HOST_REMOVAL (
         FASTP.out.reads,

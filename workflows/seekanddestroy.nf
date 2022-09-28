@@ -16,6 +16,8 @@ for (param in checkPathParamList) { if (param) { file(param, checkIfExists: true
 
 // Check mandatory parameters
 if (params.input) { ch_input = file(params.input) } else { exit 1, 'Input samplesheet not specified!' }
+if (params.scout_database) { ch_scout_database = file(params.scout_database, checkIfExists: true) }
+if (params.host_database) { ch_host_database = file(params.host_database, checkIfExists: true) }
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -106,7 +108,7 @@ workflow SEEK_AND_DESTROY {
     // Should this be a subworkflow?
     KRAKEN2_SCOUTING (
         FASTP.out.reads,
-        params.scout_database,
+        ch_scout_database
         false,
         false
     )
@@ -134,7 +136,7 @@ workflow SEEK_AND_DESTROY {
     // HOST REMOVAL SUBWORKFLOW??
     KRAKEN2_HOST_REMOVAL (
         FASTP.out.reads,
-        params.host_database,
+        ch_host_database,
         true,
         false
     )

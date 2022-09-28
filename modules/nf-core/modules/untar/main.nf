@@ -20,7 +20,7 @@ process UNTAR {
     script:
     def args  = task.ext.args ?: ''
     def args2 = task.ext.args2 ?: ''
-    untar     = archive.toString() - '.tar.gz'
+    untar     = archive.toString() - '.tar.gz' -'.tgz'
 
     """
     mkdir output

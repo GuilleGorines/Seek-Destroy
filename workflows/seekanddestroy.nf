@@ -11,13 +11,19 @@ WorkflowSeekanddestroy.initialise(params, log)
 
 // TODO nf-core: Add all file path parameters for the pipeline to the list below
 // Check input path parameters to see if they exist
-def checkPathParamList = [ params.input, params.multiqc_config]
+def checkPathParamList = [
+    params.input,
+    params.multiqc_config,
+    params.scout_database,
+    params.host_database
+]
+
 for (param in checkPathParamList) { if (param) { file(param, checkIfExists: true) } }
 
 // Check mandatory parameters
 if (params.input) { ch_input = file(params.input) } else { exit 1, 'Input samplesheet not specified!' }
-if (params.scout_database) && !(params.skip_scouting) { ch_scout_database = file(params.scout_database, checkIfExists: true) }
-if (params.host_database) && !(params.skip_host_removal) { ch_host_database = file(params.host_database, checkIfExists: true) }
+if (params.scout_database && !params.skip_scouting) { ch_scout_database = Channel.fromPath(params.scout_database) }
+if (params.host_database && !params.skip_host_removal) { ch_host_database = Channel.fromPath(params.host_database) }
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -50,14 +56,15 @@ include { FASTQC as FASTQC_PREVIOUS               } from '../modules/nf-core/mod
 include { CUTADAPT                                } from '../modules/nf-core/modules/cutadapt/main'
 include { FASTP                                   } from '../modules/nf-core/modules/fastp/main'
 include { FASTQC as FASTQC_POSTERIOR              } from '../modules/nf-core/modules/fastqc/main'
+include { UNTAR as UNTAR_SCOUTING_DB              } from '../modules/nf-core/modules/untar/main'
 include { KRAKEN2_KRAKEN2 as KRAKEN2_SCOUTING     } from '../modules/nf-core/modules/kraken2/kraken2/main'
 include { KRAKENTOOLS_KREPORT2KRONA               } from '../modules/nf-core/modules/krakentools/kreport2krona/main'
 include { KRONA_KRONADB                           } from '../modules/nf-core/modules/krona/kronadb/main'
 include { KRONA_KTIMPORTTAXONOMY                  } from '../modules/nf-core/modules/krona/ktimporttaxonomy/main'
+include { UNTAR as UNTAR_HOST_DB                  } from '../modules/nf-core/modules/untar/main'
 include { KRAKEN2_KRAKEN2 as KRAKEN2_HOST_REMOVAL } from '../modules/nf-core/modules/kraken2/kraken2/main'
 include { MULTIQC                                 } from '../modules/nf-core/modules/multiqc/main'
 include { CUSTOM_DUMPSOFTWAREVERSIONS             } from '../modules/nf-core/modules/custom/dumpsoftwareversions/main'
-
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     RUN MAIN WORKFLOW
@@ -106,9 +113,18 @@ workflow SEEK_AND_DESTROY {
 
     // MODULE: Run Kraken2: exploration with the first database
     // Should this be a subworkflow?
+
+    if (params.scout_database.endsWith("tar.gz") or params.scout_database.endsWith(".tgz")){
+    
+    ch_krakendb_scout = [[], returnFile(params.scout_database)]
+    UNTAR_SCOUTING_DB (ch_krakendb_scout)
+    ch_scout_database = UNTAR_SCOUTING_DB.out.untar
+    }
+    
+
     KRAKEN2_SCOUTING (
         FASTP.out.reads,
-        ch_scout_database
+        ch_scout_database,
         false,
         false
     )

@@ -137,9 +137,7 @@ workflow SEEK_AND_DESTROY {
 
     // MODULE: Run Krona: visualization of the kraken2 results
 
-    KRONA_KRONADB (
-
-    )
+    KRONA_KRONADB ()
     ch_versions = ch_versions.mix(KRONA_KRONADB.out.versions.first())
 
     KRONA_KTIMPORTTAXONOMY (
@@ -150,6 +148,13 @@ workflow SEEK_AND_DESTROY {
     // if estipulated not to extract data, do not do this part
     // MODULE: Run Kraken2: to remove host reads
     // HOST REMOVAL SUBWORKFLOW??
+    
+    if (params.host_database.endsWith("tar.gz") or params.host_database.endsWith(".tgz")){
+    ch_krakendb_host = [[], returnFile(params.host_database)]
+    UNTAR_HOST_DB (ch_krakendb_host)
+    ch_host_database = UNTAR_SCOUTING_DB.out.untar
+    }
+    
     KRAKEN2_HOST_REMOVAL (
         FASTP.out.reads,
         ch_host_database,

@@ -58,7 +58,7 @@ include { FASTP                                   } from '../modules/nf-core/mod
 include { FASTQC as FASTQC_POSTERIOR              } from '../modules/nf-core/modules/fastqc/main'
 include { UNTAR as UNTAR_SCOUTING_DB              } from '../modules/nf-core/modules/untar/main'
 include { KRAKEN2_KRAKEN2 as KRAKEN2_SCOUTING     } from '../modules/nf-core/modules/kraken2/kraken2/main'
-include { KRAKENTOOLS_KREPORT2KRONA               } from '../modules/nf-core/modules/krakentools/kreport2krona/main'
+include { PREPARE_KRAKEN_REPORT                   } from '../modules/local/prepare_kraken_report/main'
 include { KRONA_KRONADB                           } from '../modules/nf-core/modules/krona/kronadb/main'
 include { KRONA_KTIMPORTTAXONOMY                  } from '../modules/nf-core/modules/krona/ktimporttaxonomy/main'
 include { UNTAR as UNTAR_HOST_DB                  } from '../modules/nf-core/modules/untar/main'
@@ -115,10 +115,9 @@ workflow SEEK_AND_DESTROY {
     // Should this be a subworkflow?
 
     if (params.scout_database.endsWith("tar.gz") or params.scout_database.endsWith(".tgz")){
-    
-    ch_krakendb_scout = [[], file(params.scout_database)]
-    UNTAR_SCOUTING_DB (ch_krakendb_scout)
-    ch_scout_database = UNTAR_SCOUTING_DB.out.untar.map{ it[1] }
+        ch_krakendb_scout = [[], file(params.scout_database)]
+        UNTAR_SCOUTING_DB (ch_krakendb_scout)
+        ch_scout_database = UNTAR_SCOUTING_DB.out.untar.map{ it[1] }
     }
     
     KRAKEN2_SCOUTING (
@@ -129,10 +128,10 @@ workflow SEEK_AND_DESTROY {
     )
     ch_versions = ch_versions.mix(KRAKEN2_SCOUTING.out.versions.first())
     
-    KRAKENTOOLS_KREPORT2KRONA (
+    PREPARE_KRAKEN_REPORT (
         KRAKEN2_SCOUTING.out.report
     )
-    ch_versions = ch_versions.mix(KRAKENTOOLS_KREPORT2KRONA.out.versions.first())
+    ch_versions = ch_versions.mix(PREPARE_KRAKEN_REPORT.out.versions.first())
 
     // MODULE: Run Krona: visualization of the kraken2 results
 
@@ -140,7 +139,7 @@ workflow SEEK_AND_DESTROY {
     ch_versions = ch_versions.mix(KRONA_KRONADB.out.versions.first())
 
     KRONA_KTIMPORTTAXONOMY (
-        KRAKENTOOLS_KREPORT2KRONA.out.txt,
+        PREPARE_KRAKEN_REPORT.out.report,
         KRONA_KRONADB.out.db
     )
 

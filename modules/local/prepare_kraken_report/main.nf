@@ -25,7 +25,7 @@ process PREPARE_KRAKEN_REPORT {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        untar: \$(echo \$(tar --version 2>&1) | sed 's/^.*(GNU coreutils) //; s/ Copyright.*\$//')
+        cut: \$(echo \$(cut --version 2>&1) | sed 's/^.*(GNU coreutils) //; s/ Copyright.*\$//')
     END_VERSIONS
     """
 }

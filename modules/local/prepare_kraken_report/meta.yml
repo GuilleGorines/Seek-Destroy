@@ -9,16 +9,16 @@ tools:
   - cut:
       description: |
         Cut the second and third columns in kraken2 reports
-      documentation: https://cutadapt.readthedocs.io/en/stable/index.html
-      doi: DOI:10.14806/ej.17.1.200
-      licence: ["MIT"]
+      documentation: "https://man7.org/linux/man-pages/man1/cut.1.html"
+      doi: -
+      licence: -
 input:
   - meta:
       type: map
       description: |
         Groovy Map containing sample information
         e.g. [ id:'test', single_end:false ]
-  - reads:
+  - kraken_report:
       type: file
       description: |
         List of input FastQ files of size 1 and 2 for single-end and paired-end data,
@@ -29,18 +29,13 @@ output:
       description: |
         Groovy Map containing sample information
         e.g. [ id:'test', single_end:false ]
-  - reads:
-      type: file
-      description: The trimmed/modified fastq reads
-      pattern: "*fastq.gz"
-  - log:
-      type: file
-      description: cuatadapt log file
-      pattern: "*cutadapt.log"
   - versions:
       type: file
       description: File containing software versions
       pattern: "versions.yml"
+  - krona_report:
+      type: file
+      description: Kraken2 report ready to be used as input for krona
+      pattern: "*.krona"
 authors:
-  - "@drpatelh"
-  - "@kevinmenden"
+  - "@GuilleGorines"

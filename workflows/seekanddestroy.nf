@@ -139,7 +139,7 @@ workflow SEEK_AND_DESTROY {
     ch_versions = ch_versions.mix(KRONA_KRONADB.out.versions.first())
 
     KRONA_KTIMPORTTAXONOMY (
-        PREPARE_KRAKEN_REPORT.out.report,
+        PREPARE_KRAKEN_REPORT.out.krona_report,
         KRONA_KRONADB.out.db
     )
 

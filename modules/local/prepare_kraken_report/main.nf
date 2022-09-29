@@ -11,7 +11,7 @@ process PREPARE_KRAKEN_REPORT {
     tuple val(meta), path(kraken_report)
 
     output:
-    tuple val(meta), path("*.krona"), emit: report
+    tuple val(meta), path("*.krona"), emit: krona_report
     path "versions.yml"            , emit: versions
 
     when:

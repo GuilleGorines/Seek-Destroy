@@ -11,7 +11,7 @@ process PREPARE_KRAKEN_REPORT {
     tuple val(meta), path(kraken_report)
 
     output:
-    tuple val(meta), path("*.krona"), emit: untar
+    tuple val(meta), path("*.krona"), emit: report
     path "versions.yml"            , emit: versions
 
     when:
@@ -25,6 +25,7 @@ process PREPARE_KRAKEN_REPORT {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        cut: \$(echo \$(cut --version 2>&1) | head -n 1 | sed 's/^.*(GNU coreutils) //')
+        untar: \$(echo \$(tar --version 2>&1) | sed 's/^.*(GNU coreutils) //; s/ Copyright.*\$//')
     END_VERSIONS
     """
+}

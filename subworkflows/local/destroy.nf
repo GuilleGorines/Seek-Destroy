@@ -2,21 +2,21 @@
 // Remove host using kraken
 //
 
-include { UNTAR as UNTAR_HOST_DB } from '../../modules/'
-include { KRAKEN2 as KRAKEN2_HOST_REMOVAL } from '../../modules/'
+include { UNTAR as UNTAR_HOST_DB } from '../../modules/nf-core/untar/main'
+include { KRAKEN2 as KRAKEN2_HOST_REMOVAL } from '../../modules/nf-core/kraken2/main'
 
 
 workflow DESTROY {
     take:
     reads   // channel: [ val(meta), path(reads) ]
-    host_db // path : /path/to/host/database
+    host_db // path: /path/to/host/database
 
     main:
     ch_versions =  Channel.empty()
 
-    if (host_database.endsWith("tar.gz") or params.host_database.endsWith(".tgz")) {
+    if (host_db.endsWith("tar.gz") or host_db.endsWith(".tgz")) {
 
-        ch_krakendb_host = [[], file(params.host_database)]
+        ch_krakendb_host = [[], file(host_db)]
         
         UNTAR_HOST_DB (ch_krakendb_host)
 
@@ -33,8 +33,6 @@ workflow DESTROY {
         true,
         false
     )
-
-
 
     emit:
     reads                                     // channel: [ val(meta), [ reads ] ]

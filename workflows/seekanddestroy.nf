@@ -13,16 +13,16 @@ WorkflowSeekanddestroy.initialise(params, log)
 // Check input path parameters to see if they exist
 def checkPathParamList = [
     params.input,
-    params.multiqc_config,
-    params.scout_database,
-    params.host_database
+    params.multiqc_config
 ]
 
 for (param in checkPathParamList) { if (param) { file(param, checkIfExists: true) } }
 
 // Check mandatory parameters
 if (params.input) { ch_input = file(params.input) } else { exit 1, 'Input samplesheet not specified!' }
-if (params.scout_database && !params.skip_scouting) { ch_scout_database = Channel.fromPath(params.scout_database) }
+if (!params.skip_scouting) { 
+        scout_database = file(params.scout_database, checkIfExists: true) 
+    } else { "Scouting was programmed but no scouting database was provided!"}
 if (params.host_database && !params.skip_host_removal) { ch_host_database = Channel.fromPath(params.host_database) }
 
 /*

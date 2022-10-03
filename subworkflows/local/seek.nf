@@ -37,7 +37,7 @@ workflow SEEK {
         false
     )
 
-    KRONA_KRONADB()
+    KRONA_KRONADB ()
 
     PREPARE_KRAKEN_REPORT (
         KRAKEN2_SCOUTING.out.report

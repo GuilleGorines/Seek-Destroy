@@ -36,6 +36,7 @@ workflow SEEK {
         false,
         false
     )
+    ch_versions = ch_versions.mix(KRAKEN2_SCOUTING.out.versions)
 
     KRONA_KRONADB ()
 

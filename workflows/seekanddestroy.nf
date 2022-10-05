@@ -20,6 +20,9 @@ for (param in checkPathParamList) { if (param) { file(param, checkIfExists: true
 
 // Check mandatory parameters
 if (params.input) { ch_input = file(params.input) } else { exit 1, 'Input samplesheet not specified!' }
+if (params.skip_scouting && !params.scout_database) { exit 1. 'No scouting database was chosen!'}
+if (params.skip_host_removal && !params.host_database) { exit 1. 'No host database was chosen!'}
+
 if (params.scout_database && !params.skip_scouting) { ch_scout_database = Channel.fromPath(params.scout_database) }
 if (params.host_database && !params.skip_host_removal) { ch_host_database = Channel.fromPath(params.host_database) }
 

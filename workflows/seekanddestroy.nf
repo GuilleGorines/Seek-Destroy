@@ -20,9 +20,7 @@ for (param in checkPathParamList) { if (param) { file(param, checkIfExists: true
 
 // Check mandatory parameters
 if (params.input) { ch_input = file(params.input) } else { exit 1, 'Input samplesheet not specified!' }
-if (!params.skip_scouting) { 
-        scout_database = file(params.scout_database, checkIfExists: true) 
-    } else { "Scouting was programmed but no scouting database was provided!"}
+if (params.scout_database && !params.skip_scouting) { ch_scout_database = Channel.fromPath(params.scout_database) }
 if (params.host_database && !params.skip_host_removal) { ch_host_database = Channel.fromPath(params.host_database) }
 
 /*
@@ -118,6 +116,8 @@ workflow SEEK_AND_DESTROY {
         ch_krakendb_scout = [[], file(params.scout_database)]
         UNTAR_SCOUTING_DB (ch_krakendb_scout)
         ch_scout_database = UNTAR_SCOUTING_DB.out.untar.map{ it[1] }
+    } else {
+        ch_scout_database = Channel.fromPath()
     }
     
     KRAKEN2_SCOUTING (

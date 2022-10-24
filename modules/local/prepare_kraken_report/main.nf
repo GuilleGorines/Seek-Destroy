@@ -1,5 +1,5 @@
 process PREPARE_KRAKEN_REPORT {
-    tag "$archive"
+    tag "$meta.id"
     label 'process_single'
 
     conda (params.enable_conda ? "conda-forge::sed=4.7" : null)

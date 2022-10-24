@@ -23,8 +23,6 @@ if (params.input) { ch_input = file(params.input) } else { exit 1, 'Input sample
 if (params.skip_scouting && !params.scout_database) { exit 1. 'No scouting database was chosen!'}
 if (params.skip_host_removal && !params.host_database) { exit 1. 'No host database was chosen!'}
 
-if (params.scout_database && !params.skip_scouting) { ch_scout_database = Channel.fromPath(params.scout_database) }
-if (params.host_database && !params.skip_host_removal) { ch_host_database = Channel.fromPath(params.host_database) }
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -114,59 +112,69 @@ workflow SEEK_AND_DESTROY {
 
     // MODULE: Run Kraken2: exploration with the first database
     // Should this be a subworkflow?
+    if (!params.skip_scouting) { 
+        if (params.scout_database.endsWith("tar.gz") or params.scout_database.endsWith(".tgz")){
+            ch_krakendb_scout = [[], file(params.scout_database)]
+            UNTAR_SCOUTING_DB (ch_krakendb_scout)
+            ch_scout_database = UNTAR_SCOUTING_DB.out.untar.map{ it[1] }
 
-    if (params.scout_database.endsWith("tar.gz") or params.scout_database.endsWith(".tgz")){
-        ch_krakendb_scout = [[], file(params.scout_database)]
-        UNTAR_SCOUTING_DB (ch_krakendb_scout)
-        ch_scout_database = UNTAR_SCOUTING_DB.out.untar.map{ it[1] }
+            ch_sct_test = UNTAR_SCOUTING_DB.out.untar.map{ it[1] }
+            ch_sct_test.view()
+        } else {
+            Channel.fromPath(params.scout_database).set{ch_scout_database}
+            }
+        
+        KRAKEN2_SCOUTING (
+            FASTP.out.reads,
+            ch_scout_database,
+            false,
+            false
+        )
+        ch_versions = ch_versions.mix(KRAKEN2_SCOUTING.out.versions)
+        
+        PREPARE_KRAKEN_REPORT (
+            KRAKEN2_SCOUTING.out.report
+        )
+        ch_versions = ch_versions.mix(PREPARE_KRAKEN_REPORT.out.versions)
 
-        ch_sct_test = UNTAR_SCOUTING_DB.out.untar.map{ it[1] }
-        ch_sct_test.view()
+        // MODULE: Run Krona: visualization of the kraken2 scouting results
+        KRONA_KRONADB ()
+        ch_versions = ch_versions.mix(KRONA_KRONADB.out.versions)
+
+        KRONA_KTIMPORTTAXONOMY (
+            PREPARE_KRAKEN_REPORT.out.krona_report,
+            KRONA_KRONADB.out.db
+        )
     }
+
     
-    KRAKEN2_SCOUTING (
-        FASTP.out.reads,
-        ch_scout_database,
-        false,
-        false
-    )
-    ch_versions = ch_versions.mix(KRAKEN2_SCOUTING.out.versions)
-    
-    PREPARE_KRAKEN_REPORT (
-        KRAKEN2_SCOUTING.out.report
-    )
-    ch_versions = ch_versions.mix(PREPARE_KRAKEN_REPORT.out.versions)
-
-    // MODULE: Run Krona: visualization of the kraken2 scouting results
-    KRONA_KRONADB ()
-    ch_versions = ch_versions.mix(KRONA_KRONADB.out.versions)
-
-    KRONA_KTIMPORTTAXONOMY (
-        PREPARE_KRAKEN_REPORT.out.krona_report,
-        KRONA_KRONADB.out.db
-    )
-
     // if estipulated not to extract data, do not do this part
     // MODULE: Run Kraken2: to remove host reads
-    // HOST REMOVAL SUBWORKFLOW??
+    // HOST REMOVAL SUBWORKFLOW??     
     
-    if (params.host_database.endsWith("tar.gz") or params.host_database.endsWith(".tgz")) {
-        ch_krakendb_host = [[], file(params.host_database)]
-        UNTAR_HOST_DB (ch_krakendb_host)
-        ch_host_database = UNTAR_HOST_DB.out.untar.map{ it[1] }
+    if (!params.skip_host_removal) { 
 
-        ch_hst_test = UNTAR_HOST_DB.out.untar.map{ it[1] }
-        ch_hst_test.view()
+
+
+        if (params.host_database.endsWith("tar.gz") or params.host_database.endsWith(".tgz")) {
+            ch_krakendb_host = [[], file(params.host_database)]
+            UNTAR_HOST_DB (ch_krakendb_host)
+            ch_host_database = UNTAR_HOST_DB.out.untar.map{ it[1] }
+
+            ch_hst_test = UNTAR_HOST_DB.out.untar.map{ it[1] }
+            ch_hst_test.view()
+        } else {
+            Channel.fromPath(params.host_database).set{ch_host_database} 
+            }
+        
+        
+        KRAKEN2_HOST_REMOVAL (
+            FASTP.out.reads,
+            ch_host_database,
+            true,
+            false
+        )
     }
-    
-    
-    KRAKEN2_HOST_REMOVAL (
-        FASTP.out.reads,
-        ch_host_database,
-        true,
-        false
-    )
-
     CUSTOM_DUMPSOFTWAREVERSIONS (
         ch_versions.unique().collectFile(name: 'collated_versions.yml')
     )

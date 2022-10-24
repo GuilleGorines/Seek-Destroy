@@ -160,7 +160,8 @@ workflow SEEK_AND_DESTROY {
             ch_host_database = UNTAR_HOST_DB.out.untar.map{ it[1] }
 
         } else {
-            Channel.fromPath(params.host_database).set{ch_host_database} 
+            ch_krakendb_host = [ path(params.host_database) ]
+            Channel.fromList(ch_krakendb_host).set{ch_host_database} 
         }
         
         
@@ -171,7 +172,7 @@ workflow SEEK_AND_DESTROY {
             false
         )
     }
-    
+
     CUSTOM_DUMPSOFTWAREVERSIONS (
         ch_versions.unique().collectFile(name: 'collated_versions.yml')
     )

@@ -112,17 +112,16 @@ workflow SEEK_AND_DESTROY {
 
     // MODULE: Run Kraken2: exploration with the first database
     // Should this be a subworkflow?
-    if (!params.skip_scouting) { 
+    if (!params.skip_scouting) {
+
         if (params.scout_database.endsWith("tar.gz") or params.scout_database.endsWith(".tgz")){
             ch_krakendb_scout = [[], file(params.scout_database)]
             UNTAR_SCOUTING_DB (ch_krakendb_scout)
             ch_scout_database = UNTAR_SCOUTING_DB.out.untar.map{ it[1] }
 
-            ch_sct_test = UNTAR_SCOUTING_DB.out.untar.map{ it[1] }
-            ch_sct_test.view()
         } else {
             Channel.fromPath(params.scout_database).set{ch_scout_database}
-            }
+        }
         
         KRAKEN2_SCOUTING (
             FASTP.out.reads,
@@ -130,6 +129,7 @@ workflow SEEK_AND_DESTROY {
             false,
             false
         )
+        
         ch_versions = ch_versions.mix(KRAKEN2_SCOUTING.out.versions)
         
         PREPARE_KRAKEN_REPORT (
@@ -154,18 +154,14 @@ workflow SEEK_AND_DESTROY {
     
     if (!params.skip_host_removal) { 
 
-
-
         if (params.host_database.endsWith("tar.gz") or params.host_database.endsWith(".tgz")) {
             ch_krakendb_host = [[], file(params.host_database)]
             UNTAR_HOST_DB (ch_krakendb_host)
             ch_host_database = UNTAR_HOST_DB.out.untar.map{ it[1] }
 
-            ch_hst_test = UNTAR_HOST_DB.out.untar.map{ it[1] }
-            ch_hst_test.view()
         } else {
             Channel.fromPath(params.host_database).set{ch_host_database} 
-            }
+        }
         
         
         KRAKEN2_HOST_REMOVAL (
@@ -175,6 +171,7 @@ workflow SEEK_AND_DESTROY {
             false
         )
     }
+    
     CUSTOM_DUMPSOFTWAREVERSIONS (
         ch_versions.unique().collectFile(name: 'collated_versions.yml')
     )

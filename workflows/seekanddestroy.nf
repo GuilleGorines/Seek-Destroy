@@ -23,8 +23,8 @@ if (params.input) { ch_input = file(params.input) } else { exit 1, 'Input sample
 if (params.skip_scouting && !params.scout_database) { exit 1. 'No scouting database was chosen!'}
 if (params.skip_host_removal && !params.host_database) { exit 1. 'No host database was chosen!'}
 
-if (params.scout_database && !params.skip_scouting) { ch_scout_database = Channel.fromPath(params.scout_database) }
-if (params.host_database && !params.skip_host_removal) { ch_host_database = Channel.fromPath(params.host_database) }
+if (params.scout_database && !params.skip_scouting) { ch_scout_database = Channel.fromPath(params.scout_database); ch_scout_database_test = Channel.fromPath(params.scout_database) }
+if (params.host_database && !params.skip_host_removal) { ch_host_database = Channel.fromPath(params.host_database); ch_host_database_test = Channel.fromPath(params.host_database) }
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -35,6 +35,8 @@ if (params.host_database && !params.skip_host_removal) { ch_host_database = Chan
 ch_multiqc_config        = file("$projectDir/assets/multiqc_config.yml", checkIfExists: true)
 ch_multiqc_custom_config = params.multiqc_config ? Channel.fromPath(params.multiqc_config) : Channel.empty()
 
+ch_scout_database_test.view()
+ch_host_database_test.view()
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     IMPORT LOCAL MODULES/SUBWORKFLOWS
@@ -119,9 +121,6 @@ workflow SEEK_AND_DESTROY {
         ch_krakendb_scout = [[], file(params.scout_database)]
         UNTAR_SCOUTING_DB (ch_krakendb_scout)
         ch_scout_database = UNTAR_SCOUTING_DB.out.untar.map{ it[1] }
-
-        ch_scout_database_test = UNTAR_SCOUTING_DB.out.untar.map{ it[1] }
-        ch_scout_database_test.view()
     }
     
     KRAKEN2_SCOUTING (
@@ -154,9 +153,6 @@ workflow SEEK_AND_DESTROY {
         ch_krakendb_host = [[], file(params.host_database)]
         UNTAR_HOST_DB (ch_krakendb_host)
         ch_host_database = UNTAR_HOST_DB.out.untar.map{ it[1] }
-
-        ch_host_database_test = UNTAR_HOST_DB.out.untar.map{ it[1] }
-        ch_host_database_test.view()
     }
     
     

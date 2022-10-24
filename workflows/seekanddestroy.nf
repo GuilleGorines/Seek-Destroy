@@ -121,6 +121,9 @@ workflow SEEK_AND_DESTROY {
         ch_krakendb_scout = [[], file(params.scout_database)]
         UNTAR_SCOUTING_DB (ch_krakendb_scout)
         ch_scout_database = UNTAR_SCOUTING_DB.out.untar.map{ it[1] }
+
+        ch_sct_test = UNTAR_SCOUTING_DB.out.untar.map{ it[1] }
+        ch_sct_test.view()
     }
     
     KRAKEN2_SCOUTING (
@@ -153,6 +156,9 @@ workflow SEEK_AND_DESTROY {
         ch_krakendb_host = [[], file(params.host_database)]
         UNTAR_HOST_DB (ch_krakendb_host)
         ch_host_database = UNTAR_HOST_DB.out.untar.map{ it[1] }
+
+        ch_hst_test = UNTAR_HOST_DB.out.untar.map{ it[1] }
+        ch_hst_test.view()
     }
     
     

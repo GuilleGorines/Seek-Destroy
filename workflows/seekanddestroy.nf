@@ -119,7 +119,7 @@ workflow SEEK_AND_DESTROY {
             ch_scout_database = UNTAR_SCOUTING_DB.out.untar.map{ it[1] }
 
         } else {
-            Channel.fromFile(params.scout_database).set{ch_scout_database}
+            Channel.from(file(params.scout_database)).set{ch_scout_database}
         }
         
         KRAKEN2_SCOUTING (
@@ -158,7 +158,7 @@ workflow SEEK_AND_DESTROY {
             UNTAR_HOST_DB (list_krakendb_host)
             ch_host_database = UNTAR_HOST_DB.out.untar.map{ it[1] }
         } else {
-            Channel.fromFile(params.host_database).set{ ch_host_database } 
+            Channel.from(file(params.host_database)).set{ ch_host_database } 
         }
         
         KRAKEN2_HOST_REMOVAL (

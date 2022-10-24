@@ -151,7 +151,7 @@ workflow SEEK_AND_DESTROY {
     if (params.host_database.endsWith("tar.gz") or params.host_database.endsWith(".tgz")) {
         ch_krakendb_host = [[], file(params.host_database)]
         UNTAR_HOST_DB (ch_krakendb_host)
-        ch_host_database = UNTAR_SCOUTING_DB.out.untar.map{ it[1] }
+        ch_host_database = UNTAR_HOST_DB.out.untar.map{ it[1] }
     }
     
     

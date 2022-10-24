@@ -23,7 +23,6 @@ if (params.input) { ch_input = file(params.input) } else { exit 1, 'Input sample
 if (params.skip_scouting && !params.scout_database) { exit 1. 'No scouting database was chosen!'}
 if (params.skip_host_removal && !params.host_database) { exit 1. 'No host database was chosen!'}
 
-
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     CONFIG FILES
@@ -120,7 +119,7 @@ workflow SEEK_AND_DESTROY {
             ch_scout_database = UNTAR_SCOUTING_DB.out.untar.map{ it[1] }
 
         } else {
-            Channel.fromPath(params.scout_database).set{ch_scout_database}
+            Channel.fromFile(params.scout_database).set{ch_scout_database}
         }
         
         KRAKEN2_SCOUTING (
@@ -155,13 +154,11 @@ workflow SEEK_AND_DESTROY {
     if (!params.skip_host_removal) { 
 
         if (params.host_database.endsWith("tar.gz") or params.host_database.endsWith(".tgz")) {
-            ch_krakendb_host = [[], file(params.host_database)]
-            UNTAR_HOST_DB (ch_krakendb_host)
+            list_krakendb_host = [[], file(params.host_database)]
+            UNTAR_HOST_DB (list_krakendb_host)
             ch_host_database = UNTAR_HOST_DB.out.untar.map{ it[1] }
-
         } else {
-            ch_krakendb_host = [ params.host_database ]
-            Channel.fromList(ch_krakendb_host).set{ch_host_database} 
+            Channel.fromFile(params.host_database).set{ ch_host_database } 
         }
         
         KRAKEN2_HOST_REMOVAL (

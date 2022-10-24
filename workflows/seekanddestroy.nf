@@ -153,6 +153,7 @@ workflow SEEK_AND_DESTROY {
         ch_host_database = UNTAR_HOST_DB.out.untar.map{ it[1] }
     }
     
+    ch_host_database.view()
     
     KRAKEN2_HOST_REMOVAL (
         FASTP.out.reads,

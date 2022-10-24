@@ -164,7 +164,6 @@ workflow SEEK_AND_DESTROY {
             Channel.fromList(ch_krakendb_host).set{ch_host_database} 
         }
         
-        
         KRAKEN2_HOST_REMOVAL (
             FASTP.out.reads,
             ch_host_database,

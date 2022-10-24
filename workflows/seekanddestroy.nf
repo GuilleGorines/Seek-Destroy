@@ -89,14 +89,14 @@ workflow SEEK_AND_DESTROY {
     FASTQC_PREVIOUS (
         INPUT_CHECK.out.reads
     )
-    ch_versions = ch_versions.mix(FASTQC_PREVIOUS.out.versions.first())
+    ch_versions = ch_versions.mix(FASTQC_PREVIOUS.out.versions)
     
     // QUALITY CONTROL SUBWORKFLOW??
     // MODULE: Run CutAdapt: remove adapters
     CUTADAPT (
         INPUT_CHECK.out.reads
     )
-    ch_versions = ch_versions.mix(CUTADAPT.out.versions.first())
+    ch_versions = ch_versions.mix(CUTADAPT.out.versions)
 
     // MODULE: Run FastP: trim sequences
     FASTP (
@@ -104,7 +104,7 @@ workflow SEEK_AND_DESTROY {
         params.save_trimmed_reads,
         params.save_merged_reads
     )
-    ch_versions = ch_versions.mix(FASTP.out.versions.first())
+    ch_versions = ch_versions.mix(FASTP.out.versions)
 
     // MODULE: Run FastQC: check quality after quality control
 
@@ -127,17 +127,16 @@ workflow SEEK_AND_DESTROY {
         false,
         false
     )
-    ch_versions = ch_versions.mix(KRAKEN2_SCOUTING.out.versions.first())
+    ch_versions = ch_versions.mix(KRAKEN2_SCOUTING.out.versions)
     
     PREPARE_KRAKEN_REPORT (
         KRAKEN2_SCOUTING.out.report
     )
-    ch_versions = ch_versions.mix(PREPARE_KRAKEN_REPORT.out.versions.first())
+    ch_versions = ch_versions.mix(PREPARE_KRAKEN_REPORT.out.versions)
 
-    // MODULE: Run Krona: visualization of the kraken2 results
-
+    // MODULE: Run Krona: visualization of the kraken2 scouting results
     KRONA_KRONADB ()
-    ch_versions = ch_versions.mix(KRONA_KRONADB.out.versions.first())
+    ch_versions = ch_versions.mix(KRONA_KRONADB.out.versions)
 
     KRONA_KTIMPORTTAXONOMY (
         PREPARE_KRAKEN_REPORT.out.krona_report,

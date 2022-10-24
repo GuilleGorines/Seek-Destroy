@@ -160,7 +160,7 @@ workflow SEEK_AND_DESTROY {
             ch_host_database = UNTAR_HOST_DB.out.untar.map{ it[1] }
 
         } else {
-            ch_krakendb_host = [ path(params.host_database) ]
+            ch_krakendb_host = [ params.host_database ]
             Channel.fromList(ch_krakendb_host).set{ch_host_database} 
         }
         

@@ -50,7 +50,7 @@ On release, automated continuous integration tests run the pipeline on a full-si
 
 4. Start running your own analysis!
 
-   <!-- TODO nf-core: Update the example "typical command" below used to run the pipeline -->
+   <!-- TODO : Update the example "typical command" below used to run the pipeline -->
 
    ```bash
    nextflow run nf-core/seekanddestroy --input samplesheet.csv --outdir <OUTDIR> --genome GRCh37 -profile <docker/singularity/podman/shifter/charliecloud/conda/institute>

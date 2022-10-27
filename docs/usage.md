@@ -1,4 +1,4 @@
-# nf-core/seekanddestroy: Usage
+# Seek&Destroy Usage
 
 ## :warning: Please read this documentation on the nf-core website: [https://nf-co.re/seekanddestroy/usage](https://nf-co.re/seekanddestroy/usage)
 

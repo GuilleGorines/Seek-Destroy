@@ -1,6 +1,6 @@
 {
-    "name": "nf-core/seekanddestroy",
-    "homePage": "https://github.com/nf-core/seekanddestroy",
+    "name": "Seek&Destroy",
+    "homePage": "https://github.com/GuilleGorines/Seek-Destroy",
     "repos": {
         "nf-core/modules": {
             "git_url": "https://github.com/nf-core/modules.git",

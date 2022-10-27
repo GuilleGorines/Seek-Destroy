@@ -1,7 +1,7 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema",
     "$id": "https://raw.githubusercontent.com/GuilleGorines/Seek-Destroy/main/nextflow_schema.json",
-    "title": "nf-core/seekanddestroy pipeline parameters",
+    "title": "Seek&Destroy pipeline parameters",
     "description": "A simple pipeline for basic quality control and exploring of samples",
     "type": "object",
     "definitions": {

@@ -1,11 +1,9 @@
 #!/usr/bin/env nextflow
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    nf-core/seekanddestroy
+    Seeka&Destroy
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    Github : https://github.com/nf-core/seekanddestroy
-Website: https://nf-co.re/seekanddestroy
-    Slack  : https://nfcore.slack.com/channels/seekanddestroy
+    Github : https://github.com/GuilleGorines/Seek-Destroy
 ----------------------------------------------------------------------------------------
 */
 
@@ -28,7 +26,7 @@ WorkflowMain.initialise(workflow, params, log)
 include { SEEK_AND_DESTROY } from './workflows/seekanddestroy'
 
 //
-// WORKFLOW: Run main nf-core/seekanddestroy analysis pipeline
+// WORKFLOW: Run main Seek&Destroy analysis pipeline
 //
 workflow NFCORE_SEEKANDDESTROY {
     SEEK_AND_DESTROY ()

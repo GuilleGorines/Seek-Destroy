@@ -11,11 +11,17 @@ WorkflowSeekanddestroy.initialise(params, log)
 
 // TODO nf-core: Add all file path parameters for the pipeline to the list below
 // Check input path parameters to see if they exist
-def checkPathParamList = [ params.input, params.multiqc_config, params.fasta ]
+def checkPathParamList = [
+    params.input,
+    params.multiqc_config
+]
+
 for (param in checkPathParamList) { if (param) { file(param, checkIfExists: true) } }
 
 // Check mandatory parameters
 if (params.input) { ch_input = file(params.input) } else { exit 1, 'Input samplesheet not specified!' }
+if (params.skip_scouting && !params.scout_database) { exit 1. 'No scouting database was chosen!'}
+if (params.skip_host_removal && !params.host_database) { exit 1. 'No host database was chosen!'}
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -43,13 +49,20 @@ include { INPUT_CHECK } from '../subworkflows/local/input_check'
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-//
 // MODULE: Installed directly from nf-core/modules
-//
-include { FASTQC                      } from '../modules/nf-core/modules/fastqc/main'
-include { MULTIQC                     } from '../modules/nf-core/modules/multiqc/main'
-include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/modules/custom/dumpsoftwareversions/main'
-
+include { FASTQC as FASTQC_PREVIOUS               } from '../modules/nf-core/modules/fastqc/main'
+include { CUTADAPT                                } from '../modules/nf-core/modules/cutadapt/main'
+include { FASTP                                   } from '../modules/nf-core/modules/fastp/main'
+include { FASTQC as FASTQC_POSTERIOR              } from '../modules/nf-core/modules/fastqc/main'
+include { UNTAR as UNTAR_SCOUTING_DB              } from '../modules/nf-core/modules/untar/main'
+include { KRAKEN2_KRAKEN2 as KRAKEN2_SCOUTING     } from '../modules/nf-core/modules/kraken2/kraken2/main'
+include { PREPARE_KRAKEN_REPORT                   } from '../modules/local/prepare_kraken_report/main'
+include { KRONA_KRONADB                           } from '../modules/nf-core/modules/krona/kronadb/main'
+include { KRONA_KTIMPORTTAXONOMY                  } from '../modules/nf-core/modules/krona/ktimporttaxonomy/main'
+include { UNTAR as UNTAR_HOST_DB                  } from '../modules/nf-core/modules/untar/main'
+include { KRAKEN2_KRAKEN2 as KRAKEN2_HOST_REMOVAL } from '../modules/nf-core/modules/kraken2/kraken2/main'
+include { MULTIQC                                 } from '../modules/nf-core/modules/multiqc/main'
+include { CUSTOM_DUMPSOFTWAREVERSIONS             } from '../modules/nf-core/modules/custom/dumpsoftwareversions/main'
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     RUN MAIN WORKFLOW
@@ -59,33 +72,108 @@ include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/modules/custom/
 // Info required for completion email and summary
 def multiqc_report = []
 
-workflow SEEKANDDESTROY {
+workflow SEEK_AND_DESTROY {
 
     ch_versions = Channel.empty()
 
-    //
     // SUBWORKFLOW: Read in samplesheet, validate and stage input files
-    //
     INPUT_CHECK (
         ch_input
     )
     ch_versions = ch_versions.mix(INPUT_CHECK.out.versions)
 
-    //
-    // MODULE: Run FastQC
-    //
-    FASTQC (
+    // MODULE: Run FastQC: check initial quality
+    FASTQC_PREVIOUS (
         INPUT_CHECK.out.reads
     )
-    ch_versions = ch_versions.mix(FASTQC.out.versions.first())
+    ch_versions = ch_versions.mix(FASTQC_PREVIOUS.out.versions)
+    
+    // QUALITY CONTROL SUBWORKFLOW??
+    // MODULE: Run CutAdapt: remove adapters
+    CUTADAPT (
+        INPUT_CHECK.out.reads
+    )
+    ch_versions = ch_versions.mix(CUTADAPT.out.versions)
+
+    // MODULE: Run FastP: trim sequences
+    FASTP (
+        CUTADAPT.out.reads,
+        params.save_trimmed_reads,
+        params.save_merged_reads
+    )
+    ch_versions = ch_versions.mix(FASTP.out.versions)
+
+    // MODULE: Run FastQC: check quality after quality control
+
+    FASTQC_POSTERIOR (
+        FASTP.out.reads
+    )
+
+    // MODULE: Run Kraken2: exploration with the first database
+    // Should this be a subworkflow?
+    if (!params.skip_scouting) {
+
+        if (params.scout_database.endsWith("tar.gz") or params.scout_database.endsWith(".tgz")){
+            ch_krakendb_scout = [[], file(params.scout_database)]
+            UNTAR_SCOUTING_DB (ch_krakendb_scout)
+            ch_scout_database = UNTAR_SCOUTING_DB.out.untar.map{ it[1] }
+
+        } else {
+            ch_scout_database = file(params.scout_database)
+        }
+        
+        KRAKEN2_SCOUTING (
+            FASTP.out.reads,
+            ch_scout_database,
+            false,
+            false
+        )
+        
+        ch_versions = ch_versions.mix(KRAKEN2_SCOUTING.out.versions)
+        
+        PREPARE_KRAKEN_REPORT (
+            KRAKEN2_SCOUTING.out.report
+        )
+        ch_versions = ch_versions.mix(PREPARE_KRAKEN_REPORT.out.versions)
+
+        // MODULE: Run Krona: visualization of the kraken2 scouting results
+        KRONA_KRONADB ()
+        ch_versions = ch_versions.mix(KRONA_KRONADB.out.versions)
+
+        KRONA_KTIMPORTTAXONOMY (
+            PREPARE_KRAKEN_REPORT.out.krona_report,
+            KRONA_KRONADB.out.db
+        )
+    }
+
+    
+    // if estipulated not to extract data, do not do this part
+    // MODULE: Run Kraken2: to remove host reads
+    // HOST REMOVAL SUBWORKFLOW??     
+    
+    if (!params.skip_host_removal) { 
+
+        if (params.host_database.endsWith("tar.gz") or params.host_database.endsWith(".tgz")) {
+            list_krakendb_host = [[], file(params.host_database)]
+            UNTAR_HOST_DB (list_krakendb_host)
+            ch_host_database = UNTAR_HOST_DB.out.untar.map{ it[1] }
+        } else {
+            ch_host_database = file(params.host_database) 
+        }
+        
+        KRAKEN2_HOST_REMOVAL (
+            FASTP.out.reads,
+            ch_host_database,
+            true,
+            false
+        )
+    }
 
     CUSTOM_DUMPSOFTWAREVERSIONS (
         ch_versions.unique().collectFile(name: 'collated_versions.yml')
     )
 
-    //
     // MODULE: MultiQC
-    //
     workflow_summary    = WorkflowSeekanddestroy.paramsSummaryMultiqc(workflow, summary_params)
     ch_workflow_summary = Channel.value(workflow_summary)
 
@@ -94,7 +182,7 @@ workflow SEEKANDDESTROY {
     ch_multiqc_files = ch_multiqc_files.mix(ch_multiqc_custom_config.collect().ifEmpty([]))
     ch_multiqc_files = ch_multiqc_files.mix(ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
     ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_DUMPSOFTWAREVERSIONS.out.mqc_yml.collect())
-    ch_multiqc_files = ch_multiqc_files.mix(FASTQC.out.zip.collect{it[1]}.ifEmpty([]))
+    ch_multiqc_files = ch_multiqc_files.mix(FASTQC_PREVIOUS.out.zip.collect{it[1]}.ifEmpty([]))
 
     MULTIQC (
         ch_multiqc_files.collect()

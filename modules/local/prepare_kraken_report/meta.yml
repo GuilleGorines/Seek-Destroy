@@ -1,0 +1,41 @@
+name: prepare kraken report
+description: 
+keywords:
+  - kraken2
+  - report
+  - krona
+  - cut
+tools:
+  - cut:
+      description: |
+        Cut the second and third columns in kraken2 reports
+      documentation: "https://man7.org/linux/man-pages/man1/cut.1.html"
+      doi: -
+      licence: -
+input:
+  - meta:
+      type: map
+      description: |
+        Groovy Map containing sample information
+        e.g. [ id:'test', single_end:false ]
+  - kraken_report:
+      type: file
+      description: |
+        List of input FastQ files of size 1 and 2 for single-end and paired-end data,
+        respectively.
+output:
+  - meta:
+      type: map
+      description: |
+        Groovy Map containing sample information
+        e.g. [ id:'test', single_end:false ]
+  - versions:
+      type: file
+      description: File containing software versions
+      pattern: "versions.yml"
+  - krona_report:
+      type: file
+      description: Kraken2 report ready to be used as input for krona
+      pattern: "*.krona"
+authors:
+  - "@GuilleGorines"

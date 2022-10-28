@@ -80,7 +80,7 @@ workflow SEEK_AND_DESTROY {
     INPUT_CHECK (
         ch_input
     )
-    .sample_info
+    .reads
     .map {
         meta, fastq ->
             meta.id = meta.id.split('_')[0..-2].join('_')

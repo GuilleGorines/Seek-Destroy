@@ -80,18 +80,44 @@ workflow SEEK_AND_DESTROY {
     INPUT_CHECK (
         ch_input
     )
+    .sample_info
+    .map {
+        meta, fastq ->
+            meta.id = meta.id.split('_')[0..-2].join('_')
+            [ meta, fastq ]
+    }
+    .groupTuple(by: [0])
+    .branch {
+        meta, fastq ->
+            single  : fastq.size() == 1
+                return [ meta, fastq.flatten() ]
+            multiple: fastq.size() > 1
+                return [ meta, fastq.flatten() ]
+    }
+    .set { ch_fastq }
     ch_versions = ch_versions.mix(INPUT_CHECK.out.versions)
+
+    //
+    // MODULE: Concatenate FastQ files from same sample if required
+    //
+    CAT_FASTQ (
+        ch_fastq.multiple
+    )
+    .reads
+    .mix(ch_fastq.single)
+    .set { ch_cat_fastq }
+    ch_versions = ch_versions.mix(CAT_FASTQ.out.versions.first().ifEmpty(null))
 
     // MODULE: Run FastQC: check initial quality
     FASTQC_PREVIOUS (
-        INPUT_CHECK.out.reads
+        ch_cat_fastq
     )
     ch_versions = ch_versions.mix(FASTQC_PREVIOUS.out.versions)
     
     // QUALITY CONTROL SUBWORKFLOW??
     // MODULE: Run CutAdapt: remove adapters
     CUTADAPT (
-        INPUT_CHECK.out.reads
+        ch_cat_fastq
     )
     ch_versions = ch_versions.mix(CUTADAPT.out.versions)
 

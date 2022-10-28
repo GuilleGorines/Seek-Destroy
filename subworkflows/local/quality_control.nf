@@ -26,7 +26,7 @@ workflow QUALITY_CONTROL {
     )
 
     FASTQC_POSTERIOR (
-
+        FASTP.out.reads
     )
 
     emit: 

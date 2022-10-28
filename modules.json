@@ -25,10 +25,6 @@
                     "branch": "master",
                     "git_sha": "409a308ba46284d8ebb48c2c1befd6f6433db3f7"
                 },
-                "krakentools/kreport2krona": {
-                    "branch": "master",
-                    "git_sha": "90aef30f432332bdf0ce9f4b9004aa5d5c4960bb"
-                },
                 "krona/kronadb": {
                     "branch": "master",
                     "git_sha": "90aef30f432332bdf0ce9f4b9004aa5d5c4960bb"

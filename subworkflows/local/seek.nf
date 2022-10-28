@@ -27,7 +27,7 @@ workflow SEEK {
         ch_versions      = ch_versions.mix(UNTAR_HOST_DB.out.versions)
 
     } else {
-        ch_scout_db = Channel.fromPath(scout_db)
+        ch_scout_db = file(scout_database)
     }
 
     KRAKEN2_SCOUTING (
@@ -48,9 +48,4 @@ workflow SEEK {
         PREPARE_KRAKEN_REPORT.out.krona_report,
         KRONA_KRONADB.out.db
     )
-
-    emit:
-
-
-
 }

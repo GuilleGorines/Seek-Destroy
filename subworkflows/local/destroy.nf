@@ -24,7 +24,7 @@ workflow DESTROY {
         ch_versions      = ch_versions.mix(UNTAR_HOST_DB.out.versions)
 
     } else {
-        ch_host_database = Channel.fromPath(host_db)
+        ch_host_database = file(host_db)
     }
 
     KRAKEN2_HOST_REMOVAL (

@@ -50,7 +50,7 @@ include { INPUT_CHECK } from '../subworkflows/local/input_check'
 */
 
 // MODULE: Installed directly from nf-core/modules
-include { CAT_FASTQ                               } from '../modules/nf-core/modules/cat/main'
+include { CAT_FASTQ                               } from '../modules/nf-core/modules/cat/fastq/main'
 include { FASTQC as FASTQC_PREVIOUS               } from '../modules/nf-core/modules/fastqc/main'
 include { CUTADAPT                                } from '../modules/nf-core/modules/cutadapt/main'
 include { FASTP                                   } from '../modules/nf-core/modules/fastp/main'
